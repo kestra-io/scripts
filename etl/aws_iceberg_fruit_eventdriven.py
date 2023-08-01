@@ -1,16 +1,20 @@
-import sys
-
 import awswrangler as wr
 from kestra import Kestra
-import pandas as pd
 
-
-FILE = sys.argv[1] or "{{taskrun.value}}"
+# original file to ingest e.g. inbox/fruit_1.csv
+INGEST_S3_KEY = "{{ trigger.objects | jq('.[].key') | first }}"
 BUCKET_NAME = "kestraio"
+# e.g. s3://kestraio/archive/inbox/fruit_1.csv
+INGEST_S3_KEY_FULL_PATH = f"s3://{BUCKET_NAME}/archive/{INGEST_S3_KEY}"
+
+# Iceberg table
 DATABASE = "default"
 TABLE = "raw_fruits"
+
+# Iceberg table's location
 S3_PATH = f"s3://{BUCKET_NAME}/{TABLE}"
 S3_PATH_TMP = f"{S3_PATH}_tmp"
+
 MERGE_QUERY = """
 MERGE INTO fruits f USING raw_fruits r
     ON f.fruit = r.fruit
@@ -22,16 +26,11 @@ MERGE INTO fruits f USING raw_fruits r
               VALUES(r.id, r.fruit, r.berry, current_timestamp);
 """
 
+df = wr.s3.read_csv(INGEST_S3_KEY_FULL_PATH)
+nr_rows = df.id.nunique()
+print(f"Ingesting {nr_rows} rows")
+Kestra.counter("nr_rows", nr_rows, {"table": TABLE})
 
-def extract_from_source_system(file: str = FILE) -> pd.DataFrame:
-    fruits_df = pd.read_csv(file)
-    nr_rows = fruits_df.id.nunique()
-    print(f"Ingesting {nr_rows} rows")
-    Kestra.counter("nr_rows", nr_rows, {"table": TABLE})
-    return fruits_df
-
-
-df, nr_rows = extract_from_source_system()
 df = df[~df["fruit"].isin(["Blueberry", "Banana"])]
 df = df.drop_duplicates(subset=["fruit"], ignore_index=True, keep="first")
 

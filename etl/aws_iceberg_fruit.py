@@ -6,7 +6,7 @@ from kestra import Kestra
 import pandas as pd
 
 
-SOURCE_FILES = sys.argv[1] or "fruit_*.csv"
+SOURCE_FILES = "fruit_*.csv"
 BUCKET_NAME = "kestraio"
 DATABASE = "default"
 TABLE = "raw_fruits"

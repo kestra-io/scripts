@@ -1,4 +1,3 @@
-import glob
 import sys
 
 import awswrangler as wr
@@ -6,7 +5,7 @@ from kestra import Kestra
 import pandas as pd
 
 
-SOURCE_FILES = sys.argv[1] or "fruit_*.csv"
+FILE = sys.argv[1] or "{{taskrun.value}}"
 BUCKET_NAME = "kestraio"
 DATABASE = "default"
 TABLE = "raw_fruits"
@@ -24,18 +23,15 @@ MERGE INTO fruits f USING raw_fruits r
 """
 
 
-def extract_from_source_system() -> pd.DataFrame:
-    files_list = glob.glob(SOURCE_FILES)
-    if not files_list:
-        sys.exit(f"No new files to process.")
-    fruits_df = pd.concat(map(pd.read_csv, files_list))
+def extract_from_source_system(file: str = FILE) -> pd.DataFrame:
+    fruits_df = pd.read_csv(file)
     nr_rows = fruits_df.id.nunique()
     print(f"Ingesting {nr_rows} rows")
     Kestra.counter("nr_rows", nr_rows, {"table": TABLE})
     return fruits_df
 
 
-df = extract_from_source_system()
+df, nr_rows = extract_from_source_system()
 df = df[~df["fruit"].isin(["Blueberry", "Banana"])]
 df = df.drop_duplicates(subset=["fruit"], ignore_index=True, keep="first")
 

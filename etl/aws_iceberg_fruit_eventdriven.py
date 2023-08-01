@@ -1,8 +1,9 @@
+import sys
 import awswrangler as wr
 from kestra import Kestra
 
 # original file to ingest e.g. inbox/fruit_1.csv
-INGEST_S3_KEY = "{{ trigger.objects | jq('.[].key') | first }}"
+INGEST_S3_KEY = sys.argv[1] or "inbox/fruit_1.csv"
 BUCKET_NAME = "kestraio"
 # e.g. s3://kestraio/archive/inbox/fruit_1.csv
 INGEST_S3_KEY_FULL_PATH = f"s3://{BUCKET_NAME}/archive/{INGEST_S3_KEY}"

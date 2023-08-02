@@ -2,8 +2,13 @@ import sys
 import awswrangler as wr
 from kestra import Kestra
 
-# original file to ingest e.g. inbox/fruit_1.csv
-INGEST_S3_KEY_PATH = sys.argv[1] or "s3://kestraio/archive/inbox/"
+# original file to ingest e.g. s3://kestraio/inbox/
+INGEST_S3_KEY_PATH = "s3://kestraio/archive/inbox/"
+
+if len(sys.argv) > 1:
+    INGEST_S3_KEY_PATH = sys.argv[1]
+else:
+    print(f"No custom path provided. Using the default path: {INGEST_S3_KEY_PATH}.")
 
 # Iceberg table
 BUCKET_NAME = "kestraio"

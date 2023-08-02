@@ -1,17 +1,19 @@
-import glob
 import sys
-
 import awswrangler as wr
 from kestra import Kestra
-import pandas as pd
 
+# original file to ingest e.g. inbox/fruit_1.csv
+INGEST_S3_KEY_PATH = sys.argv[1] or "s3://kestraio/archive/inbox/"
 
-SOURCE_FILES = "fruit_*.csv"
+# Iceberg table
 BUCKET_NAME = "kestraio"
 DATABASE = "default"
 TABLE = "raw_fruits"
+
+# Iceberg table's location
 S3_PATH = f"s3://{BUCKET_NAME}/{TABLE}"
 S3_PATH_TMP = f"{S3_PATH}_tmp"
+
 MERGE_QUERY = """
 MERGE INTO fruits f USING raw_fruits r
     ON f.fruit = r.fruit
@@ -23,14 +25,10 @@ MERGE INTO fruits f USING raw_fruits r
               VALUES(r.id, r.fruit, r.berry, current_timestamp);
 """
 
+if not INGEST_S3_KEY_PATH.startswith("s3://"):
+    INGEST_S3_KEY_PATH = f"s3://{BUCKET_NAME}/{INGEST_S3_KEY_PATH}"
 
-files_list = glob.glob(SOURCE_FILES)
-
-if not files_list:
-    print("No new files to process.")
-    sys.exit(0)
-
-df = pd.concat(map(pd.read_csv, files_list))
+df = wr.s3.read_csv(INGEST_S3_KEY_PATH)
 nr_rows = df.id.nunique()
 print(f"Ingesting {nr_rows} rows")
 Kestra.counter("nr_rows", nr_rows, {"table": TABLE})

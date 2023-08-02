@@ -24,18 +24,17 @@ MERGE INTO fruits f USING raw_fruits r
 """
 
 
-def extract_from_source_system() -> pd.DataFrame:
-    files_list = glob.glob(SOURCE_FILES)
-    if not files_list:
-        sys.exit(f"No new files to process.")
-    fruits_df = pd.concat(map(pd.read_csv, files_list))
-    nr_rows = fruits_df.id.nunique()
-    print(f"Ingesting {nr_rows} rows")
-    Kestra.counter("nr_rows", nr_rows, {"table": TABLE})
-    return fruits_df
+files_list = glob.glob(SOURCE_FILES)
 
+if not files_list:
+    print("No new files to process.")
+    sys.exit(0)
 
-df = extract_from_source_system()
+df = pd.concat(map(pd.read_csv, files_list))
+nr_rows = df.id.nunique()
+print(f"Ingesting {nr_rows} rows")
+Kestra.counter("nr_rows", nr_rows, {"table": TABLE})
+
 df = df[~df["fruit"].isin(["Blueberry", "Banana"])]
 df = df.drop_duplicates(subset=["fruit"], ignore_index=True, keep="first")
 

@@ -19,17 +19,6 @@ TABLE = "raw_fruits"
 S3_PATH = f"s3://{BUCKET_NAME}/{TABLE}"
 S3_PATH_TMP = f"{S3_PATH}_tmp"
 
-MERGE_QUERY = """
-MERGE INTO fruits f USING raw_fruits r
-    ON f.fruit = r.fruit
-    WHEN MATCHED
-        THEN UPDATE
-            SET id = r.id, berry = r.berry, update_timestamp = current_timestamp
-    WHEN NOT MATCHED
-        THEN INSERT (id, fruit, berry, update_timestamp)
-              VALUES(r.id, r.fruit, r.berry, current_timestamp);
-"""
-
 if not INGEST_S3_KEY_PATH.startswith("s3://"):
     INGEST_S3_KEY_PATH = f"s3://{BUCKET_NAME}/{INGEST_S3_KEY_PATH}"
 
@@ -51,11 +40,5 @@ wr.athena.to_iceberg(
     temp_path=S3_PATH_TMP,
     partition_cols=["berry"],
     keep_files=False,
-)
-
-wr.athena.start_query_execution(
-    sql=MERGE_QUERY,
-    database=DATABASE,
-    wait=True,
 )
 print(f"New data successfully ingested into {S3_PATH}")

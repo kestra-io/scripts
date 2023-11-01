@@ -8,13 +8,12 @@ from platform import node, platform
 stub = modal.Stub("example")
 
 
-@stub.function()
 def square(x):
     print("This code is running on a remote worker!")
     print(f"Network: {node()}. Instance: {platform()}.")
     return x**2
 
 
-@stub.local_entrypoint()
+@stub.function()
 def main():
-    print("the square is", square.call(42))
+    print("the square is", square(42))

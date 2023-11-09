@@ -10,7 +10,7 @@ jobs:
     steps:
       - uses: actions/checkout@v3
       - name: namespace_files
-        uses: kestra-io/deploy-action@develop
+        uses: kestra-io/deploy-action@master
         with:
           resource: namespace_files
           namespace: prod

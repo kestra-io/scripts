@@ -1,3 +1,6 @@
 .git/
+.github/
 .idea/
 .vscode/
+docker-compose.yml
+*.md

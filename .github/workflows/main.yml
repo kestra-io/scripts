@@ -14,7 +14,8 @@ jobs:
         with:
           resource: namespace_files
           namespace: prod
-          directory: etl/
+          directory: .
+          to: .
           server: https://demo.kestra.io/
           user: cicd
           password: ${{secrets.KESTRA_PASSWORD}}

@@ -1,0 +1,40 @@
+id: pebble_in_webhook
+namespace: qa
+description: hello from QA
+inputs:
+  - name: github_url
+    type: STRING
+    defaults: https://github.com/kestra-io/kestra/issues/2740
+
+  - name: body
+    type: JSON
+    defaults: |
+      {
+        "pull_request": {
+            "html_url": "https://github.com/kestra-io/kestra/issues/2740",
+            "body": "This PR replaces the ${{ env.GITHUB_TOKEN }} with a more secure ${{ secrets.GITHUB_TOKEN }}"
+        }
+      }
+
+variables:
+  github_url: "{{ trigger.body.pull_request.html_url ?? trigger.body.issue.html_url ?? inputs.github_url }}"
+  body: "{{ trigger.body.pull_request.body ?? trigger.body.issue.body ?? inputs.body }}"
+
+tasks:
+  - id: render_once
+    type: io.kestra.core.tasks.log.Log
+    message: "{{ render(vars.body, recursive=false) }}"
+
+  - id: not-recursive
+    type: io.kestra.core.tasks.log.Log
+    message: "{{ vars.body }}"
+
+  - id: recursive
+    type: io.kestra.core.tasks.log.Log
+    message: "{{ render(vars.body) }}"
+    allowFailure: true # this task will fail because it will try to render the webhook's payload
+
+triggers:
+  - id: webhook
+    type: io.kestra.core.models.triggers.types.Webhook
+    key: test1234

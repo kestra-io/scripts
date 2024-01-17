@@ -1,0 +1,42 @@
+id: pebble_string_concatenation
+namespace: qa
+
+inputs:
+  - name: date
+    type: DATE
+    defaults: 2024-02-24T22:00:00.000Z
+
+  - name: user
+    type: STRING
+    defaults: Rick
+
+variables:
+  day_of_week: "{{ trigger.date ?? inputs.date | date('EEEE') }}"
+  full_date: "{{ vars.day_of_week, trigger.date ?? inputs.date | date('yyyy-MM-dd') }}"
+  greeting_tilda: "{{'Hello, ' ~ inputs.user ~ ' on ' ~ vars.full_date }}"
+  greeting_brackets: "Hello, {{ inputs.user }} on {{ vars.full_date }}"
+
+tasks:
+  - id: not-rendered 
+    type: io.kestra.core.tasks.log.Log
+    message: |
+     Tilda: {{ vars.greeting_tilda }}
+     Brackets: {{ vars.greeting_brackets }}
+
+  - id: rendered-recursively
+    type: io.kestra.core.tasks.log.Log
+    message: |
+     Tilda: {{ render(vars.greeting_tilda) }}
+     Brackets: {{ render(vars.greeting_brackets) }}
+
+  - id: rendered-once
+    type: io.kestra.core.tasks.log.Log
+    message: |
+     Tilda: {{ render(vars.greeting_tilda, recursive=false) }}
+     Brackets: {{ render(vars.greeting_brackets, recursive=false) }}
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    disabled: true
+    cron: "* * * * *"

@@ -1,0 +1,6 @@
+id: hello
+namespace: qa
+tasks:
+  - id: hello
+    type: io.kestra.core.tasks.log.Log
+    message: Kestra team wishes you a great day! 👋

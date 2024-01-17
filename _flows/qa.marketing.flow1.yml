@@ -1,6 +1,0 @@
-id: flow1
-namespace: qa.marketing
-tasks:
-  - id: hello
-    type: io.kestra.core.tasks.log.Log
-    message: Kestra team wishes you a great day! 👋

@@ -1,5 +1,5 @@
-id: flow1
-namespace: qa.child
+id: hello
+namespace: prod
 tasks:
   - id: hello
     type: io.kestra.core.tasks.log.Log

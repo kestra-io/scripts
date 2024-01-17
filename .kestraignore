@@ -3,4 +3,3 @@
 .idea/
 .vscode/
 docker-compose.yml
-*.md

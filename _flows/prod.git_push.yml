@@ -1,0 +1,14 @@
+id: git_push
+namespace: prod
+tasks:
+  - id: push
+    type: io.kestra.plugin.git.Push
+    commitMessage: add mynewflow and gitpush
+    url: https://github.com/kestra-io/scripts
+    branch: dev
+    username: anna-geller
+    password: "{{ secret('GITHUB_ACCESS_TOKEN') }}"  # needed for private repositories
+    flows:
+      enabled: true
+    namespaceFiles:
+      enabled: true

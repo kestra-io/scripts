@@ -1,0 +1,16 @@
+id: git_sync
+namespace: prod
+
+tasks:
+  - id: git
+    type: io.kestra.plugin.git.Sync
+    url: https://github.com/kestra-io/scripts
+    branch: main
+    username: anna-geller
+    password: "{{ secret('GITHUB_ACCESS_TOKEN') }}"  # needed for private repositories
+
+triggers:
+  - id: schedule
+    type: io.kestra.core.models.triggers.types.Schedule
+    disabled: true
+    cron: "*/1 * * * *" # every minute

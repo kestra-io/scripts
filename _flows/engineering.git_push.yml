@@ -1,0 +1,15 @@
+id: git_push
+namespace: engineering
+
+tasks:
+  - id: commit_and_push
+    type: io.kestra.plugin.git.Push
+    namespaceFiles:
+      enabled: true
+    flows:
+      enabled: true
+    url: https://github.com/kestra-io/scripts
+    branch: kestra
+    username: anna-geller
+    password: "{{ secret('GITHUB_ACCESS_TOKEN') }}"
+    commitMessage: "add flows and scripts {{ now() }}"    

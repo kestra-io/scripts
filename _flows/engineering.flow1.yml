@@ -1,0 +1,6 @@
+id: flow1
+namespace: engineering
+tasks:
+  - id: hello
+    type: io.kestra.core.tasks.log.Log
+    message: hello from {{flow.namespace}}

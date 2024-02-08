@@ -1,0 +1,6 @@
+id: flow7
+namespace: engineering.product
+tasks:
+  - id: hello
+    type: io.kestra.core.tasks.log.Log
+    message: hello from {{flow.namespace}}

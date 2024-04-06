@@ -1,8 +1,77 @@
 id: forecast
-namespace: welcome
+namespace: dev
+
+inputs:
+  - id: days
+    description: Nr of days in the future to generate forecast for
+    type: INT
+    defaults: 365
+
+  - id: file_path
+    description: The path to the CSV file
+    type: STRING
+    defaults: sales_data.csv
+
+  - id: n_estimators
+    description: Number of gradient boosted trees. Equivalent to number of boosting rounds.
+    type: INT
+    defaults: 500
+
+  - id: learning_rate
+    description: Boosting learning rate (xgb’s “eta”)
+    type: FLOAT
+    defaults: 0.1
+
+  - id: max_depth
+    description: Maximum tree depth for base learners.
+    type: INT
+    defaults: 3
+
+  - id: subsample
+    description: Subsample ratio of the training instances.
+    type: FLOAT
+    defaults: 0.7
+
+  - id: colsample_bytree
+    description: Subsample ratio of columns when constructing each tree.
+    type: FLOAT
+    defaults: 0.7
+
+  - id: gamma
+    description: Minimum loss reduction required to make a further partition on a leaf node of the tree.
+    type: FLOAT
+    defaults: 1
+
+  - id: early_stopping_rounds
+    description: Activates early stopping. Validation error needs to decrease at least every <early_stopping_rounds> round(s) to continue training
+    type: INT
+    defaults: 100
+
 tasks:
-  - id: dataIngestionSync
-    type: io.kestra.plugin.fivetran.connectors.Sync
-    connectorId: forecast
-    apiKey: "{{envs.fivetran_api_key}}"
-    apiSecret: "{{envs.fivetran_api_secret}}"
+  - id: extract
+    type: io.kestra.plugin.fs.http.Download
+    uri: https://huggingface.co/datasets/kestra/datasets/resolve/main/csv/sales_data.csv
+
+  - id: wdir
+    type: io.kestra.core.tasks.flows.WorkingDirectory
+    tasks:
+      - id: git
+        type: io.kestra.plugin.git.Clone
+        url: https://github.com/kestra-io/scripts
+        branch: main
+
+      - id: ml-sales-forecast
+        type: io.kestra.plugin.scripts.python.Commands
+        commands:
+          - python ml/forecast.py --days "{{ inputs.days }}" --file_path "{{ inputs.file_path }}" --n_estimators "{{ inputs.n_estimators }}" --learning_rate "{{ inputs.learning_rate }}" --max_depth "{{ inputs.max_depth }}" --subsample "{{ inputs.subsample }}" --colsample_bytree "{{ inputs.colsample_bytree }}" --gamma "{{ inputs.gamma }}" --early_stopping_rounds "{{ inputs.early_stopping_rounds }}"
+        docker:
+          image: ghcr.io/kestra-io/pydata:latest
+        beforeCommands:
+          - pip install matplotlib xgboost
+        warningOnStdErr: false
+        outputFiles:
+          - "*.png"
+          - "*.csv"
+          - "*.json"
+        inputFiles:
+          sales_data.csv: "{{ outputs.extract.uri }}"

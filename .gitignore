@@ -166,3 +166,4 @@ cython_debug/
 .wip/
 
 .DS_Store
+/.idea

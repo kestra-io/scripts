@@ -1,19 +1,20 @@
-"""
-modal token set --token-id {{secret('MODAL_TOKEN_ID')}} --token-secret {{secret('MODAL_TOKEN_SECRET')}}
-modal token set --token-id {{envs.modal_token_id}} --token-secret {{envs.modal_token_secret}}
-"""
 import modal
-from platform import node, platform
 
-stub = modal.Stub("example")
-
-
-def square(x):
-    print("This code is running on a remote worker!")
-    print(f"Network: {node()}. Instance: {platform()}.")
-    return x**2
+app = modal.App("getting-started")
 
 
-@stub.function()
+@app.function()
+def get_platform_info():
+    import platform
+
+    machine_name = platform.node()
+    print("Hello from a remote server running on Modal")
+    print(f"Machine name: {machine_name}")
+    return machine_name
+
+
+@app.local_entrypoint()
 def main():
-    print("the square is", square(42))
+    output = get_platform_info.remote()
+    print(f"hello from {output}")
+    print("hello from kestra")

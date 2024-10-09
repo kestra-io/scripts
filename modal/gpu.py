@@ -1,20 +1,22 @@
-from modal import Stub, Image
-
-stub = Stub("gpu-demo")
+import modal
 
 
-@stub.function(
-    gpu="any",
-    image=(
-        Image.debian_slim().run_commands(
-            "pip install torch --extra-index-url https://download.pytorch.org/whl/cu117"
-        )
+app = modal.App(
+    "example-gpu",
+    image=modal.Image.debian_slim().pip_install(
+        "torch", find_links="https://download.pytorch.org/whl/cu117"
     ),
 )
+
+
+@app.function(gpu="any")
 def print_gpu_info():
     import torch
+    import subprocess
 
-    device_nr = torch.cuda.current_device()
-    gpu_count = torch.cuda.device_count()
-    device_name = torch.cuda.get_device_name(0)
-    print(f"Device: {device_nr}, GPU count: {gpu_count}, Device name: {device_name}")
+    subprocess.run(["nvidia-smi"])
+    print("Torch version:", torch.__version__)
+    print("CUDA available:", torch.cuda.is_available())
+    print("CUDA device count:", torch.cuda.device_count())
+    print("CUDA device name:", torch.cuda.get_device_name(0))
+    print("CUDA device index:", torch.cuda.current_device())

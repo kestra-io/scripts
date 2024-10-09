@@ -2,7 +2,7 @@ from datetime import datetime, timedelta
 import requests
 
 
-def search_hackernews(query: str = "kestra", window_size_days: int = 7):
+def search_hackernews(query: str = "orchestration", window_size_days: int = 7):
     url = "http://hn.algolia.com/api/v1/search"
 
     threshold = datetime.utcnow() - timedelta(days=window_size_days)
@@ -13,8 +13,7 @@ def search_hackernews(query: str = "kestra", window_size_days: int = 7):
     }
 
     response = requests.get(url, params).json()
-    urls = [item["url"] for item in response["hits"] if item["url"]]
-
+    urls = [item["url"] for item in response["hits"] if "url" in item and item["url"]]
     print(f"Query returned {len(urls)} items.")
     print(urls)
 

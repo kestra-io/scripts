@@ -4,7 +4,7 @@ app = modal.App("getting-started")
 image = modal.Image.debian_slim().pip_install("kestra")
 
 
-@app.function()
+@app.function(image=image)
 def get_platform_info():
     import platform
     from kestra import Kestra

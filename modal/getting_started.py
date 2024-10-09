@@ -1,45 +1,30 @@
 import modal
 
 app = modal.App("getting-started")
+image = modal.Image.debian_slim().pip_install("kestra")
 
 
 @app.function()
 def get_platform_info():
-    import socket
     import platform
-    import os
+    from kestra import Kestra
+
     machine_name = platform.node()
     system = platform.system()
-    release = platform.release()
-    version = platform.version()
     architecture = platform.machine()
-    processor = platform.processor()
-    hostname = socket.gethostname()
-    ip_address = socket.gethostbyname(hostname)
-    environment = os.environ
 
     print("Hello from a remote server running on Modal")
     print(f"Machine name: {machine_name}")
     print(f"System: {system}")
-    print(f"Release: {release}")
-    print(f"Version: {version}")
     print(f"Architecture: {architecture}")
-    print(f"Processor: {processor}")
-    print(f"Hostname: {hostname}")
-    print(f"IP Address: {ip_address}")
-    print(f"Environment Variables: {environment}")
 
-    return {
+    result = {
         "machine_name": machine_name,
         "system": system,
-        "release": release,
-        "version": version,
         "architecture": architecture,
-        "processor": processor,
-        "hostname": hostname,
-        "ip_address": ip_address,
-        "environment_variables": dict(environment)
     }
+    Kestra.outputs(result)
+    return result
 
 
 @app.local_entrypoint()
